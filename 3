@@ -1,0 +1,10 @@
+from sklearn.datasets import load_iris
+from sklearn.tree import DecisionTreeClassifier
+data = load_iris()
+model = DecisionTreeClassifier(criterion="entropy")
+model.fit(data.data, data.target)
+
+print(model.predict([[5.1,3.5,1.4,0.2]]))
+
+OUTPUT:
+[0]
