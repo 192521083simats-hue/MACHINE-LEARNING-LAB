@@ -1,0 +1,24 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error, r2_score
+ 
+rng = np.random.default_rng(42)
+n = 1000
+df = pd.DataFrame({
+    "Age_Years": rng.integers(0, 15, n),
+    "Km_Driven": rng.integers(1000, 150000, n),
+    "Engine_CC": rng.choice([800, 1000, 1200, 1500, 2000], n),
+    "Is_Automatic": rng.integers(0, 2, n)})
+price = ((3 + df.Engine_CC * 0.006 + 1.2 * df.Is_Automatic) * 0.9**df.Age_Years
+         - df.Km_Driven / 200000 + rng.normal(0, 0.3, n)).clip(lower=0.5)
+ 
+X_train, X_test, y_train, y_test = train_test_split(df, price, test_size=0.2, random_state=42)
+model = RandomForestRegressor(n_estimators=200, random_state=42).fit(X_train, y_train)
+pred = model.predict(X_test)
+print("MAE (lakhs):", round(mean_absolute_error(y_test, pred), 3))
+print("R2:", round(r2_score(y_test, pred), 4))
+ 
+car = pd.DataFrame([[3, 40000, 1200, 0]], columns=df.columns)
+print("Predicted price (lakhs):", round(model.predict(car)[0], 2))
