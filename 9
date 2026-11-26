@@ -1,0 +1,25 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+ 
+rng = np.random.default_rng(42)
+X = np.sort(rng.uniform(-3, 3, 100)).reshape(-1, 1)
+y = 0.8 * X.ravel()**2 + 2 * X.ravel() + 3 + rng.normal(0, 1, 100)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+ 
+models = {"Linear": LinearRegression(),
+          "Polynomial (degree 2)": make_pipeline(PolynomialFeatures(2), LinearRegression())}
+ 
+plt.scatter(X, y, s=12, label="Data")
+grid = np.linspace(-3, 3, 200).reshape(-1, 1)
+for name, m in models.items():
+    m.fit(X_train, y_train)
+    p = m.predict(X_test)
+    print(f"{name}: MSE={mean_squared_error(y_test, p):.3f}, R2={r2_score(y_test, p):.3f}")
+    plt.plot(grid, m.predict(grid), label=name)
+plt.legend(); plt.show()
+ 
