@@ -1,0 +1,25 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, confusion_matrix
+ 
+rng = np.random.default_rng(42)
+n = 1000
+df = pd.DataFrame({
+    "Income": rng.uniform(15000, 150000, n),
+    "Loan_Amount": rng.uniform(50000, 2000000, n),
+    "Credit_Score": rng.integers(300, 901, n),
+    "Employed": rng.choice([0, 1], n, p=[0.2, 0.8])})
+score = (df.Income / 20000 - df.Loan_Amount / 400000 + (df.Credit_Score - 600) / 60
+         + 2 * df.Employed + rng.normal(0, 1, n))
+y = (score > 3).astype(int)  # 1 = Approved
+ 
+X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.2, random_state=42, stratify=y)
+model = GaussianNB().fit(X_train, y_train)
+pred = model.predict(X_test)
+print("Confusion Matrix:\n", confusion_matrix(y_test, pred))
+print("Accuracy:", round(accuracy_score(y_test, pred), 4))
+ 
+applicant = pd.DataFrame([[60000, 500000, 750, 1]], columns=df.columns)
+print("Loan status:", "Approved" if model.predict(applicant)[0] else "Rejected")
