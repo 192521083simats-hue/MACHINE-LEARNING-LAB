@@ -1,0 +1,29 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, r2_score
+ 
+def features(t):
+    # trend + yearly seasonality
+    return np.column_stack([t, np.sin(2 * np.pi * t / 12), np.cos(2 * np.pi * t / 12)])
+ 
+rng = np.random.default_rng(42)
+t = np.arange(1, 61)
+sales = 200 + 5 * t + 30 * np.sin(2 * np.pi * t / 12) + rng.normal(0, 10, 60)
+ 
+# Time-ordered split: train on first 48 months, test on last 12
+model = LinearRegression().fit(features(t[:48]), sales[:48])
+pred = model.predict(features(t[48:]))
+print("MAE:", round(mean_absolute_error(sales[48:], pred), 2))
+print("R2:", round(r2_score(sales[48:], pred), 4))
+ 
+model.fit(features(t), sales)
+future = np.arange(61, 67)
+forecast = model.predict(features(future))
+for m, s in zip(future, forecast):
+    print(f"Month {m}: {s:.1f}")
+ 
+plt.plot(t, sales, label="History")
+plt.plot(future, forecast, "r--", label="Forecast")
+plt.xlabel("Month"); plt.ylabel("Sales"); plt.legend(); plt.show()
+ 
