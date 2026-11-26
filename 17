@@ -1,0 +1,26 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix
+ 
+rng = np.random.default_rng(42)
+n = 2000
+df = pd.DataFrame({
+    "RAM_GB": rng.choice([2, 3, 4, 6, 8, 12], n),
+    "Storage_GB": rng.choice([32, 64, 128, 256], n),
+    "Battery_mAh": rng.integers(2500, 6001, n),
+    "Camera_MP": rng.choice([8, 12, 48, 64, 108], n),
+    "Screen_inch": rng.uniform(5, 7, n)})
+value = (2 * df.RAM_GB + df.Storage_GB / 20 + df.Battery_mAh / 1000
+         + df.Camera_MP / 15 + rng.normal(0, 1.5, n))
+y = pd.qcut(value, 4, labels=False)  # 0=Low, 1=Medium, 2=High, 3=Premium
+ 
+X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.2, random_state=42, stratify=y)
+model = RandomForestClassifier(n_estimators=200, random_state=42).fit(X_train, y_train)
+pred = model.predict(X_test)
+print("Confusion Matrix:\n", confusion_matrix(y_test, pred))
+print("Accuracy:", round(accuracy_score(y_test, pred), 4))
+ 
+phone = pd.DataFrame([[8, 128, 5000, 64, 6.5]], columns=df.columns)
+print("Price range:", ["Low", "Medium", "High", "Premium"][model.predict(phone)[0]])
