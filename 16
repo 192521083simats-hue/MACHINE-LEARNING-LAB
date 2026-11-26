@@ -1,0 +1,27 @@
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import cross_validate, StratifiedKFold
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+ 
+X, y = load_breast_cancer(return_X_y=True)
+models = {
+    "Logistic Regression": LogisticRegression(),
+    "KNN": KNeighborsClassifier(),
+    "Naive Bayes": GaussianNB(),
+    "Decision Tree": DecisionTreeClassifier(random_state=42),
+    "Random Forest": RandomForestClassifier(random_state=42),
+    "SVM": SVC()}
+ 
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+metrics = ["accuracy", "precision", "recall", "f1"]
+print(f"{'Model':<22}" + "".join(f"{m:>11}" for m in metrics))
+for name, m in models.items():
+    r = cross_validate(make_pipeline(StandardScaler(), m), X, y, cv=cv, scoring=metrics)
+    print(f"{name:<22}" + "".join(f"{r['test_' + k].mean():>11.4f}" for k in metrics))
+ 
