@@ -1,0 +1,28 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+ 
+rng = np.random.default_rng(42)
+n = 2000
+df = pd.DataFrame({
+    "Annual_Income": rng.uniform(200000, 2000000, n),
+    "Num_Loans": rng.integers(0, 8, n),
+    "Delayed_Payments": rng.integers(0, 20, n),
+    "Credit_Utilization": rng.uniform(5, 95, n),
+    "Credit_History_Years": rng.uniform(0, 25, n)})
+ 
+score = (df.Annual_Income / 100000 - 2 * df.Num_Loans - 1.5 * df.Delayed_Payments
+         - 0.2 * df.Credit_Utilization + df.Credit_History_Years + rng.normal(0, 3, n))
+df["Credit_Score"] = pd.qcut(score, 3, labels=["Poor", "Standard", "Good"]).astype(str)
+ 
+X, y = df.drop(columns="Credit_Score"), df["Credit_Score"]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+model = RandomForestClassifier(n_estimators=200, random_state=42).fit(X_train, y_train)
+pred = model.predict(X_test)
+print("Accuracy:", round(accuracy_score(y_test, pred), 4))
+print(classification_report(y_test, pred))
+ 
+new = pd.DataFrame([[900000, 2, 3, 30, 8]], columns=X.columns)
+print("New customer credit score:", model.predict(new)[0])
